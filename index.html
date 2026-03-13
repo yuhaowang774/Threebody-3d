@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>三体 - 3D版</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="canvas-container"></div>
+
+    <div class="panel-container" id="panelContainer">
+      <button class="toggle-btn" id="togglePanel">⚙</button>
+      <div class="control-panel" id="controlPanel">
+        <div class="btn-group">
+          <button id="start">开始</button>
+          <button id="stop">暂停</button>
+          <button id="reset">重置</button>
+          <button id="restore">恢复</button>
+        </div>
+        <div class="bodies-container">
+          <div class="bodies-header">
+            <div class="label-col"></div>
+            <div class="body-col">恒星1</div>
+            <div class="body-col">恒星2</div>
+            <div class="body-col">恒星3</div>
+            <div class="body-col">行星</div>
+          </div>
+          <div class="bodies-row">
+            <div class="label-col">质量</div>
+            <div class="body-col">
+              <input type="number" id="m1" value="1" step="0.1" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="m2" value="1" step="0.1" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="m3" value="1" step="0.1" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="m4" value="0.01" step="0.001" />
+            </div>
+          </div>
+          <div class="bodies-row">
+            <div class="label-col">速度X</div>
+            <div class="body-col">
+              <input type="number" id="v1x" value="0.347" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v2x" value="0.347" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v3x" value="-0.694" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v4x" value="0" step="0.01" />
+            </div>
+          </div>
+          <div class="bodies-row">
+            <div class="label-col">速度Y</div>
+            <div class="body-col">
+              <input type="number" id="v1y" value="0.533" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v2y" value="0.533" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v3y" value="-1.066" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v4y" value="0" step="0.01" />
+            </div>
+          </div>
+          <div class="bodies-row">
+            <div class="label-col">速度Z</div>
+            <div class="body-col">
+              <input type="number" id="v1z" value="0.1" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v2z" value="-0.1" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v3z" value="0" step="0.01" />
+            </div>
+            <div class="body-col">
+              <input type="number" id="v4z" value="0" step="0.01" />
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="input-group">
+          <label>引力常数:</label>
+          <input type="number" id="gravity" value="1" step="1" />
+        </div>
+        <div class="input-group">
+          <label>运行速度:</label>
+          <input
+            type="number"
+            id="speedInput"
+            value="1"
+            step="1"
+            min="1"
+            max="50"
+          />
+          <input
+            type="range"
+            id="speedRange"
+            value="1"
+            step="1"
+            min="1"
+            max="50"
+          />
+          <span id="speedVal">1x</span>
+        </div>
+        <div class="input-group">
+          <label>运行时间:</label>
+          <span id="timeDisplay">0.00s</span>
+        </div>
+        <div class="divider"></div>
+        <div class="input-group">
+          <label>轨迹长度:</label>
+          <input
+            type="number"
+            id="trailLength"
+            value="1000"
+            step="10"
+            min="10"
+            max="5000"
+          />
+          <input
+            type="range"
+            id="trailLengthRange"
+            value="1000"
+            step="10"
+            min="10"
+            max="5000"
+          />
+          <span id="trailLengthVal">1000</span>
+        </div>
+        <div class="feature-buttons">
+          <button class="feature-btn active" id="btnTrail">显示轨迹</button>
+          <button class="feature-btn" id="btnCom">显示质心</button>
+          <button class="feature-btn active" id="btnMinDist">引力软化</button>
+          <button class="feature-btn" id="btnCollision">碰撞检测</button>
+        </div>
+        <div class="divider"></div>
+        <div class="body-controls">
+          <h4>镜头控制</h4>
+          <div class="feature-buttons">
+            <button class="feature-btn active" id="btnAutoZoom">
+              自动缩放
+            </button>
+            <button class="feature-btn active" id="btnAutoRotate">
+              自动旋转
+            </button>
+            <button class="feature-btn" id="btnMouseFollow">鼠标跟随</button>
+          </div>
+          <div class="camera-control-section">
+            <div class="section-label">自动缩放参数</div>
+            <div class="input-group">
+              <label>缩放灵敏度:</label>
+              <input
+                type="number"
+                id="autoZoomSensitivity"
+                value="0.01"
+                step="0.01"
+                min="0.01"
+                max="0.5"
+              />
+              <input
+                type="range"
+                id="autoZoomSensitivityRange"
+                value="0.01"
+                step="0.01"
+                min="0.01"
+                max="0.5"
+              />
+              <span id="autoZoomSensitivityVal">0.01</span>
+            </div>
+            <div class="input-group">
+              <label>边距系数:</label>
+              <input
+                type="number"
+                id="autoZoomPadding"
+                value="2"
+                step="0.1"
+                min="1.1"
+                max="3.0"
+              />
+              <input
+                type="range"
+                id="autoZoomPaddingRange"
+                value="2"
+                step="0.1"
+                min="1.1"
+                max="3.0"
+              />
+              <span id="autoZoomPaddingVal">2.0</span>
+            </div>
+          </div>
+          <div class="camera-control-section">
+            <div class="section-label">自动旋转参数</div>
+            <div class="input-group">
+              <label>旋转速度 (°/秒):</label>
+              <input
+                type="number"
+                id="autoRotateSpeed"
+                value="1"
+                step="0.1"
+                min="0.5"
+                max="5"
+              />
+              <input
+                type="range"
+                id="autoRotateSpeedRange"
+                value="1"
+                step="0.1"
+                min="0.5"
+                max="5"
+              />
+              <span id="autoRotateSpeedVal">1.0</span>
+            </div>
+            <div class="input-group">
+              <label>角度限制:</label>
+              <input
+                type="checkbox"
+                id="enableAngleLimit"
+                style="width: auto; margin-right: 10px"
+              />
+              <input
+                type="number"
+                id="minAngle"
+                value="0"
+                step="10"
+                min="0"
+                max="360"
+                placeholder="最小"
+                style="width: 70px"
+                disabled
+              />
+              <span style="margin: 0 5px">-</span>
+              <input
+                type="number"
+                id="maxAngle"
+                value="360"
+                step="10"
+                min="0"
+                max="360"
+                placeholder="最大"
+                style="width: 70px"
+                disabled
+              />
+            </div>
+          </div>
+          <div class="camera-control-section">
+            <div class="section-label">鼠标跟随参数</div>
+            <div class="input-group">
+              <label>灵敏度:</label>
+              <input
+                type="number"
+                id="mouseFollowSensitivity"
+                value="0.3"
+                step="0.1"
+                min="0.1"
+                max="1.0"
+              />
+              <input
+                type="range"
+                id="mouseFollowSensitivityRange"
+                value="0.3"
+                step="0.1"
+                min="0.1"
+                max="1.0"
+              />
+              <span id="mouseFollowSensitivityVal">0.3</span>
+            </div>
+            <div class="input-group">
+              <label>X轴范围:</label>
+              <input
+                type="number"
+                id="mouseFollowMaxX"
+                value="200"
+                step="10"
+                min="50"
+                max="500"
+              />
+              <input
+                type="range"
+                id="mouseFollowMaxXRange"
+                value="200"
+                step="10"
+                min="50"
+                max="500"
+              />
+              <span id="mouseFollowMaxXVal">200</span>
+            </div>
+            <div class="input-group">
+              <label>Y轴范围:</label>
+              <input
+                type="number"
+                id="mouseFollowMaxY"
+                value="150"
+                step="10"
+                min="50"
+                max="400"
+              />
+              <input
+                type="range"
+                id="mouseFollowMaxYRange"
+                value="150"
+                step="10"
+                min="50"
+                max="400"
+              />
+              <span id="mouseFollowMaxYVal">150</span>
+            </div>
+            <div class="input-group">
+              <label>平滑度:</label>
+              <input
+                type="number"
+                id="mouseFollowSmoothing"
+                value="0.08"
+                step="0.01"
+                min="0.01"
+                max="0.3"
+              />
+              <input
+                type="range"
+                id="mouseFollowSmoothingRange"
+                value="0.08"
+                step="0.01"
+                min="0.01"
+                max="0.3"
+              />
+              <span id="mouseFollowSmoothingVal">0.08</span>
+            </div>
+          </div>
+          <div class="camera-control-section">
+            <div class="section-label">实时状态</div>
+            <div class="input-group">
+              <label>当前缩放:</label>
+              <span id="currentZoomLevel">1.00</span>
+            </div>
+            <div class="input-group">
+              <label>当前角度:</label>
+              <span id="currentRotateAngle">0°</span>
+            </div>
+          </div>
+          <div class="feature-buttons">
+            <button class="reset-panel-btn" id="resetAutoZoom" style="flex: 1">
+              重置缩放
+            </button>
+            <button
+              class="reset-panel-btn"
+              id="resetAutoRotate"
+              style="flex: 1"
+            >
+              重置旋转
+            </button>
+            <button
+              class="reset-panel-btn"
+              id="resetMouseFollow"
+              style="flex: 1"
+            >
+              重置跟随
+            </button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="body-controls">
+          <h4>引力牢笼系统 (球形)</h4>
+          <div class="feature-buttons">
+            <button class="feature-btn active" id="btnCageEnabled">
+              启用引力牢笼
+            </button>
+            <button class="feature-btn" id="btnCageShowBoundaries">
+              显示边界
+            </button>
+          </div>
+          <div class="input-group">
+            <label>边界半径:</label>
+            <input
+              type="number"
+              id="cageBoundary"
+              value="1600"
+              step="50"
+              min="400"
+              max="4000"
+            />
+            <input
+              type="range"
+              id="cageBoundaryRange"
+              value="1600"
+              step="50"
+              min="400"
+              max="4000"
+            />
+            <span id="cageBoundaryVal">1600</span>
+          </div>
+          <div class="input-group">
+            <label>预警半径:</label>
+            <input
+              type="number"
+              id="cageWarning"
+              value="700"
+              step="50"
+              min="200"
+              max="3000"
+            />
+            <input
+              type="range"
+              id="cageWarningRange"
+              value="700"
+              step="50"
+              min="200"
+              max="3000"
+            />
+            <span id="cageWarningVal">700</span>
+          </div>
+          <div class="input-group">
+            <label>场强度:</label>
+            <input
+              type="number"
+              id="cageStrength"
+              value="1"
+              step="0.1"
+              min="0.1"
+              max="10"
+            />
+            <input
+              type="range"
+              id="cageStrengthRange"
+              value="1"
+              step="0.1"
+              min="0.1"
+              max="10"
+            />
+            <span id="cageStrengthVal">1.0</span>
+          </div>
+          <div class="input-group">
+            <label>非线性指数:</label>
+            <input
+              type="number"
+              id="cageExponent"
+              value="4"
+              step="1"
+              min="2"
+              max="10"
+            />
+            <input
+              type="range"
+              id="cageExponentRange"
+              value="4"
+              step="1"
+              min="2"
+              max="10"
+            />
+            <span id="cageExponentVal">4</span>
+          </div>
+          <div class="input-group">
+            <label>最大倍率:</label>
+            <input
+              type="number"
+              id="cageMaxMult"
+              value="100"
+              step="10"
+              min="10"
+              max="500"
+            />
+            <input
+              type="range"
+              id="cageMaxMultRange"
+              value="100"
+              step="10"
+              min="10"
+              max="500"
+            />
+            <span id="cageMaxMultVal">100</span>
+          </div>
+          <div class="input-group">
+            <label>阻尼系数:</label>
+            <input
+              type="number"
+              id="cageDamping"
+              value="0.1"
+              step="0.01"
+              min="0"
+              max="1"
+            />
+            <input
+              type="range"
+              id="cageDampingRange"
+              value="0.1"
+              step="0.01"
+              min="0"
+              max="1"
+            />
+            <span id="cageDampingVal">0.10</span>
+          </div>
+          <div class="input-group">
+            <label>牢笼势能:</label>
+            <span id="cageEnergy">0.0000</span>
+          </div>
+          <div class="input-group">
+            <label>最近天体:</label>
+            <span id="nearestBodyStatus">安全</span>
+          </div>
+          <button class="reset-panel-btn" id="resetGravityCage">
+            重置参数
+          </button>
+        </div>
+        <div class="divider"></div>
+        <div class="body-controls">
+          <h4>星际尘埃效果</h4>
+          <div class="feature-buttons">
+            <button class="feature-btn active" id="btnDustEnabled">
+              启用尘埃
+            </button>
+          </div>
+          <div class="input-group">
+            <label>近层密度:</label>
+            <input
+              type="number"
+              id="dustLayer1Count"
+              value="800"
+              step="100"
+              min="0"
+              max="2000"
+            />
+            <input
+              type="range"
+              id="dustLayer1CountRange"
+              value="800"
+              step="100"
+              min="0"
+              max="2000"
+            />
+            <span id="dustLayer1CountVal">800</span>
+          </div>
+          <div class="input-group">
+            <label>中层密度:</label>
+            <input
+              type="number"
+              id="dustLayer2Count"
+              value="600"
+              step="100"
+              min="0"
+              max="2000"
+            />
+            <input
+              type="range"
+              id="dustLayer2CountRange"
+              value="600"
+              step="100"
+              min="0"
+              max="2000"
+            />
+            <span id="dustLayer2CountVal">600</span>
+          </div>
+          <div class="input-group">
+            <label>远层密度:</label>
+            <input
+              type="number"
+              id="dustLayer3Count"
+              value="400"
+              step="100"
+              min="0"
+              max="2000"
+            />
+            <input
+              type="range"
+              id="dustLayer3CountRange"
+              value="400"
+              step="100"
+              min="0"
+              max="2000"
+            />
+            <span id="dustLayer3CountVal">400</span>
+          </div>
+          <div class="input-group">
+            <label>漂移速度:</label>
+            <input
+              type="number"
+              id="dustDriftSpeed"
+              value="1"
+              step="0.1"
+              min="0"
+              max="5"
+            />
+            <input
+              type="range"
+              id="dustDriftSpeedRange"
+              value="1"
+              step="0.1"
+              min="0"
+              max="5"
+            />
+            <span id="dustDriftSpeedVal">1.0</span>
+          </div>
+          <div class="input-group">
+            <label>整体透明度:</label>
+            <input
+              type="number"
+              id="dustOpacity"
+              value="1"
+              step="0.1"
+              min="0"
+              max="2"
+            />
+            <input
+              type="range"
+              id="dustOpacityRange"
+              value="1"
+              step="0.1"
+              min="0"
+              max="2"
+            />
+            <span id="dustOpacityVal">1.0</span>
+          </div>
+          <div class="input-group">
+            <label>粒子大小:</label>
+            <input
+              type="number"
+              id="dustSize"
+              value="3"
+              step="0.1"
+              min="0.1"
+              max="5"
+            />
+            <input
+              type="range"
+              id="dustSizeRange"
+              value="3"
+              step="0.1"
+              min="0.1"
+              max="5"
+            />
+            <span id="dustSizeVal">3.0</span>
+          </div>
+          <div class="input-group">
+            <label>光照强度:</label>
+            <input
+              type="number"
+              id="dustLightIntensity"
+              value="3"
+              step="0.1"
+              min="0"
+              max="5"
+            />
+            <input
+              type="range"
+              id="dustLightIntensityRange"
+              value="3"
+              step="0.1"
+              min="0"
+              max="5"
+            />
+            <span id="dustLightIntensityVal">3.0</span>
+          </div>
+          <div class="input-group">
+            <label>渲染距离:</label>
+            <input
+              type="number"
+              id="dustMaxViewDistance"
+              value="2500"
+              step="10"
+              min="500"
+              max="3500"
+            />
+            <input
+              type="range"
+              id="dustMaxViewDistanceRange"
+              value="2500"
+              step="10"
+              min="500"
+              max="3500"
+            />
+            <span id="dustMaxViewDistanceVal">2500</span>
+          </div>
+          <button class="reset-panel-btn" id="resetDust">重置尘埃参数</button>
+        </div>
+        <div class="divider"></div>
+      </div>
+    </div>
+
+    <div class="camera-info" id="cameraInfo">
+      相机距离: <span id="cameraDistance">500</span> | 视角:
+      <span id="cameraAngle">0°</span>
+    </div>
+
+    <div id="bodyLabelsContainer"></div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
