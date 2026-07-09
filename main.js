@@ -842,6 +842,8 @@ return;
 
 this.dustTime += deltaTime * 0.001 * this.dustConfig.driftSpeed;
 
+const com = this.computeCenterOfMass();
+
 this.dustParticles.forEach((dustLayer) => {
 dustLayer.mesh.visible = true;
 const positions = dustLayer.mesh.geometry.attributes.position.array;
@@ -861,7 +863,6 @@ this.dustConfig.lightIntensity;
 dustLayer.mesh.material.uniforms.maxViewDistance.value =
 this.dustConfig.maxViewDistance;
 
-const com = this.computeCenterOfMass();
 dustLayer.mesh.material.uniforms.lightPos.value.set(
 com.x,
 com.y,
@@ -919,61 +920,49 @@ dustLayer.mesh.geometry.setDrawRange(0, count);
 initGravityCageMesh() {
 this.cageWarningMesh = null;
 this.cageBoundaryMesh = null;
-}
+this.cageMeshDirty = true;
 
-updateGravityCageMesh() {
-if (this.cageWarningMesh) {
-this.scene.remove(this.cageWarningMesh);
-this.cageWarningMesh.geometry.dispose();
-this.cageWarningMesh.material.dispose();
-}
-if (this.cageBoundaryMesh) {
-this.scene.remove(this.cageBoundaryMesh);
-this.cageBoundaryMesh.geometry.dispose();
-this.cageBoundaryMesh.material.dispose();
-}
-
-if (!this.gravityCage.showBoundaries) return;
-
-const cx = this.gravityCage.center.x;
-const cy = this.gravityCage.center.y;
-const cz = this.gravityCage.center.z;
-
-const warningGeometry = new THREE.SphereGeometry(
-this.gravityCage.warningRadius,
-64,
-64,
-);
+const warningGeometry = new THREE.SphereGeometry(1, 32, 32);
 const warningMaterial = new THREE.MeshBasicMaterial({
 color: 0xffc832,
 transparent: true,
 opacity: 0.08,
 wireframe: true,
 });
-this.cageWarningMesh = new THREE.Mesh(
-warningGeometry,
-warningMaterial,
-);
-this.cageWarningMesh.position.set(cx, cy, cz);
+this.cageWarningMesh = new THREE.Mesh(warningGeometry, warningMaterial);
+this.cageWarningMesh.visible = false;
 this.scene.add(this.cageWarningMesh);
 
-const boundaryGeometry = new THREE.SphereGeometry(
-this.gravityCage.boundaryRadius,
-64,
-64,
-);
+const boundaryGeometry = new THREE.SphereGeometry(1, 32, 32);
 const boundaryMaterial = new THREE.MeshBasicMaterial({
 color: 0xff3232,
 transparent: true,
 opacity: 0.15,
 wireframe: true,
 });
-this.cageBoundaryMesh = new THREE.Mesh(
-boundaryGeometry,
-boundaryMaterial,
-);
-this.cageBoundaryMesh.position.set(cx, cy, cz);
+this.cageBoundaryMesh = new THREE.Mesh(boundaryGeometry, boundaryMaterial);
+this.cageBoundaryMesh.visible = false;
 this.scene.add(this.cageBoundaryMesh);
+}
+
+updateGravityCageMesh() {
+if (!this.cageWarningMesh || !this.cageBoundaryMesh) return;
+
+const shouldShow = this.gravityCage.showBoundaries;
+this.cageWarningMesh.visible = shouldShow;
+this.cageBoundaryMesh.visible = shouldShow;
+
+if (!shouldShow) return;
+
+const cx = this.gravityCage.center.x;
+const cy = this.gravityCage.center.y;
+const cz = this.gravityCage.center.z;
+
+this.cageWarningMesh.position.set(cx, cy, cz);
+this.cageWarningMesh.scale.setScalar(this.gravityCage.warningRadius);
+
+this.cageBoundaryMesh.position.set(cx, cy, cz);
+this.cageBoundaryMesh.scale.setScalar(this.gravityCage.boundaryRadius);
 }
 
 initComMesh() {
@@ -1256,7 +1245,9 @@ this.exitFocusMode();
 }
 }
 
-updateFocusFollow() {
+updateFocusFollow(deltaTime = 1 / 60) {
+const lerpFactor = 1 - Math.pow(0.0001, deltaTime);
+
 if (this.focusMode.exiting) {
 const elapsed = performance.now() - this.focusMode.exitStartTime;
 const duration = 2000;
@@ -1305,8 +1296,8 @@ const targetCameraPos = currentTarget
 .clone()
 .add(direction.multiplyScalar(currentDistance));
 
-this.camera.position.lerp(targetCameraPos, 0.08);
-this.controls.target.lerp(currentTarget, 0.08);
+this.camera.position.lerp(targetCameraPos, lerpFactor);
+this.controls.target.lerp(currentTarget, lerpFactor);
 
 if (progress >= 1) {
 this.focusMode.exiting = false;
@@ -1345,8 +1336,8 @@ const targetCameraPos = targetPosition
 .clone()
 .add(currentDirection.multiplyScalar(targetDist));
 
-this.camera.position.lerp(targetCameraPos, 0.08);
-this.controls.target.lerp(targetPosition, 0.08);
+this.camera.position.lerp(targetCameraPos, lerpFactor);
+this.controls.target.lerp(targetPosition, lerpFactor);
 
 const transitionDist = Math.abs(currentDist - targetDist);
 if (transitionDist < 5) {
@@ -1354,7 +1345,7 @@ this.focusMode.transitioning = false;
 }
 } else {
 const oldTarget = this.controls.target.clone();
-this.controls.target.lerp(targetPosition, 0.1);
+this.controls.target.lerp(targetPosition, lerpFactor);
 const delta = this.controls.target.clone().sub(oldTarget);
 this.camera.position.add(delta);
 }
@@ -1981,8 +1972,11 @@ rotateAngleEl.textContent = currentDeg.toFixed(1) + "°";
 
 run() {
 const sim = this;
+let lastFrameTime = performance.now();
 function frame() {
-const startFrame = performance.now();
+const now = performance.now();
+const deltaTime = Math.min((now - lastFrameTime) / 1000, 0.1);
+lastFrameTime = now;
 if (sim.running) {
 for (let i = 0; i < sim.speedMultiplier; i++) {
 sim.step();
@@ -1991,7 +1985,7 @@ sim.updateAutoZoom();
 }
 sim.updateAutoRotate();
 sim.updateMouseFollow();
-sim.updateFocusFollow();
+sim.updateFocusFollow(deltaTime);
 sim.controls.update();
 sim.draw();
 sim.timer = requestAnimationFrame(frame);

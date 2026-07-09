@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三体3D - 创意提案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: #0a0e1a;
+    color: #e0e6f0;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* 星空背景 */
+  .starfield {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+  .starfield span {
+    position: absolute; border-radius: 50%; background: #fff;
+    animation: twinkle var(--dur) ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto; padding: 40px 24px;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center; padding: 80px 0 60px;
+  }
+  .hero-badge {
+    display: inline-block; padding: 6px 20px; border-radius: 20px;
+    background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4);
+    color: #a5b4fc; font-size: 14px; margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: 52px; font-weight: 800; letter-spacing: -1px;
+    background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 18px; color: #94a3b8; max-width: 600px; margin: 0 auto;
+  }
+
+  /* 三体轨道动画 */
+  .orbit-demo {
+    width: 280px; height: 280px; margin: 40px auto; position: relative;
+  }
+  .orbit-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .orbit-star {
+    position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  }
+  .orbit-star.s1 { color: #f59e0b; background: #f59e0b; animation: orbit1 6s ease-in-out infinite; }
+  .orbit-star.s2 { color: #3b82f6; background: #3b82f6; animation: orbit2 7s ease-in-out infinite; }
+  .orbit-star.s3 { color: #ef4444; background: #ef4444; animation: orbit3 8s ease-in-out infinite; }
+  @keyframes orbit1 {
+    0%,100% { transform: translate(60px, -30px); }
+    25% { transform: translate(-40px, 50px); }
+    50% { transform: translate(-70px, -20px); }
+    75% { transform: translate(30px, -60px); }
+  }
+  @keyframes orbit2 {
+    0%,100% { transform: translate(-50px, 40px); }
+    25% { transform: translate(70px, -10px); }
+    50% { transform: translate(20px, 60px); }
+    75% { transform: translate(-60px, -40px); }
+  }
+  @keyframes orbit3 {
+    0%,100% { transform: translate(30px, 50px); }
+    25% { transform: translate(-60px, -30px); }
+    50% { transform: translate(50px, -50px); }
+    75% { transform: translate(-20px, 40px); }
+  }
+  .orbit-trail {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0.3;
+  }
+  .orbit-trail.t1 { background: #f59e0b; animation: trail1 6s linear infinite; }
+  .orbit-trail.t2 { background: #3b82f6; animation: trail2 7s linear infinite; }
+  .orbit-trail.t3 { background: #ef4444; animation: trail3 8s linear infinite; }
+  @keyframes trail1 {
+    0%,100% { transform: translate(60px, -30px); opacity: 0.1; }
+    12.5% { transform: translate(10px, 10px); opacity: 0.4; }
+    25% { transform: translate(-40px, 50px); opacity: 0.1; }
+  }
+  @keyframes trail2 {
+    0%,100% { transform: translate(-50px, 40px); opacity: 0.1; }
+    12.5% { transform: translate(10px, 15px); opacity: 0.4; }
+    25% { transform: translate(70px, -10px); opacity: 0.1; }
+  }
+  @keyframes trail3 {
+    0%,100% { transform: translate(30px, 50px); opacity: 0.1; }
+    12.5% { transform: translate(-15px, 10px); opacity: 0.4; }
+    25% { transform: translate(-60px, -30px); opacity: 0.1; }
+  }
+
+  /* Section */
+  .section {
+    margin: 60px 0; padding: 36px; border-radius: 16px;
+    background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(99, 102, 241, 0.15);
+    backdrop-filter: blur(8px);
+  }
+  .section-tag {
+    display: inline-block; padding: 4px 14px; border-radius: 12px; font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .tag-problem { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+  .tag-solution { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+  .tag-user { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+  .tag-value { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+  .tag-feature { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+  .section h2 {
+    font-size: 26px; font-weight: 700; margin-bottom: 20px; color: #f1f5f9;
+  }
+  .section h3 {
+    font-size: 18px; font-weight: 600; margin: 20px 0 10px; color: #cbd5e1;
+  }
+  .section p { color: #94a3b8; margin-bottom: 12px; }
+
+  /* Feature cards */
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; margin-top: 20px;
+  }
+  .feature-card {
+    padding: 20px; border-radius: 12px;
+    background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.1);
+    transition: border-color 0.3s;
+  }
+  .feature-card:hover { border-color: rgba(99, 102, 241, 0.4); }
+  .feature-icon { font-size: 28px; margin-bottom: 10px; }
+  .feature-card h4 { font-size: 16px; color: #e2e8f0; margin-bottom: 6px; }
+  .feature-card p { font-size: 14px; color: #64748b; margin: 0; }
+
+  /* Pain points */
+  .pain-list { list-style: none; padding: 0; }
+  .pain-list li {
+    padding: 14px 18px; margin-bottom: 10px; border-radius: 10px;
+    background: rgba(239, 68, 68, 0.06); border-left: 3px solid #ef4444;
+    color: #cbd5e1; font-size: 15px;
+  }
+
+  /* User personas */
+  .persona-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px; margin-top: 16px;
+  }
+  .persona {
+    padding: 18px; border-radius: 12px; text-align: center;
+    background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+  .persona-icon { font-size: 32px; margin-bottom: 8px; }
+  .persona h4 { font-size: 15px; color: #e2e8f0; margin-bottom: 4px; }
+  .persona p { font-size: 13px; color: #64748b; margin: 0; }
+
+  /* Value metrics */
+  .value-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px; margin-top: 20px;
+  }
+  .value-card {
+    padding: 24px; border-radius: 12px; text-align: center;
+    background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.2);
+  }
+  .value-number { font-size: 36px; font-weight: 800; color: #c084fc; }
+  .value-label { font-size: 14px; color: #94a3b8; margin-top: 4px; }
+
+  /* Tech stack */
+  .tech-row {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px;
+  }
+  .tech-badge {
+    padding: 6px 16px; border-radius: 20px; font-size: 13px;
+    background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #a5b4fc;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center; padding: 40px 0; color: #475569; font-size: 14px;
+  }
+  .footer a { color: #818cf8; text-decoration: none; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    .section { padding: 24px; }
+    .orbit-demo { width: 200px; height: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 星空背景 -->
+<div class="starfield" id="starfield"></div>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">学习工作赛道</div>
+    <h1>三体3D</h1>
+    <p>沉浸式三体问题交互模拟器 —— 让混沌力学触手可及</p>
+    <div class="orbit-demo">
+      <div class="orbit-star s1"></div>
+      <div class="orbit-star s2"></div>
+      <div class="orbit-star s3"></div>
+    </div>
+  </div>
+
+  <!-- 1. 问题与灵感 -->
+  <div class="section">
+    <span class="section-tag tag-problem">问题与灵感</span>
+    <h2>为什么需要三体3D？</h2>
+    <p>三体问题是经典力学中最著名的未解难题之一。三颗恒星在引力作用下的运动轨迹具有极度的混沌特性——初始条件的微小变化将导致完全不同的演化结果。然而，现有的教学和科普工具大多停留在2D平面演示，无法直观展现三体系统在三维空间中的混沌运动特征。</p>
+    <h3>灵感来源</h3>
+    <p>灵感来源于刘慈欣《三体》小说中对三体世界的描写——三颗恒星无规则运动带来的恒纪元与乱纪元。小说让无数人对三体问题产生兴趣，但真正能"看到"三体运动的人很少。我希望让每个人都能亲手操控三颗恒星，直观感受混沌之美。</p>
+    <h3>产品形态</h3>
+    <p>基于Web的3D交互式三体问题模拟器（网站），用户可实时调整恒星质量、初速度、引力常数等参数，观察三体系统在不同初始条件下的演化轨迹。</p>
+  </div>
+
+  <!-- 2. 当前痛点 -->
+  <div class="section">
+    <span class="section-tag tag-problem">痛点分析</span>
+    <h2>现有方案存在什么问题？</h2>
+    <ul class="pain-list">
+      <li><strong>2D局限：</strong>现有三体模拟器多为2D平面展示，缺乏三维空间感，无法体现Z轴方向的运动特征</li>
+      <li><strong>门槛过高：</strong>专业天文软件（如Stellarium、Universe Sandbox）操作复杂，对普通用户不友好</li>
+      <li><strong>参数不可调：</strong>多数在线演示只能播放预设动画，用户无法自由调整初始条件进行实验</li>
+      <li><strong>缺少教学辅助：</strong>没有工具能同时提供轨迹可视化、质心追踪、引力牢笼等教学辅助功能</li>
+    </ul>
+  </div>
+
+  <!-- 3. 目标用户 -->
+  <div class="section">
+    <span class="section-tag tag-user">目标用户</span>
+    <h2>谁会使用三体3D？</h2>
+    <div class="persona-grid">
+      <div class="persona">
+        <div class="persona-icon">🔬</div>
+        <h4>物理爱好者</h4>
+        <p>探索混沌力学，验证不同初始条件对轨道的影响</p>
+      </div>
+      <div class="persona">
+        <div class="persona-icon">🔭</div>
+        <h4>天文爱好者</h4>
+        <p>直观理解多体引力系统，观察恒星运动规律</p>
+      </div>
+      <div class="persona">
+        <div class="persona-icon">🎓</div>
+        <h4>中学/大学生</h4>
+        <p>课堂演示与自主实验，将抽象方程转化为可视化</p>
+      </div>
+      <div class="persona">
+        <div class="persona-icon">📖</div>
+        <h4>科幻迷</h4>
+        <p>探索《三体》小说中恒星的运行规律，沉浸式体验三体世界</p>
+      </div>
+    </div>
+    <h3>使用场景</h3>
+    <p>物理课堂演示三体问题的混沌特性；科普博主制作三体运动可视化内容；科幻迷探索《三体》小说中恒星的运行规律；学生自主实验验证不同初始条件对轨道的影响。</p>
+  </div>
+
+  <!-- 4. 核心功能 -->
+  <div class="section">
+    <span class="section-tag tag-feature">核心功能</span>
+    <h2>三体3D能做什么？</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🌌</div>
+        <h4>3D实时模拟</h4>
+        <p>基于Three.js的3D渲染引擎，支持轨道控制自由旋转、缩放、平移观察</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎛️</div>
+        <h4>参数自由调节</h4>
+        <p>恒星质量、三轴初速度、引力常数、运行速度均可实时调整</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✨</div>
+        <h4>轨迹可视化</h4>
+        <p>可调长度的运动轨迹线，直观展示混沌运动的不可预测性</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🪐</div>
+        <h4>引力牢笼系统</h4>
+        <p>球形边界约束防止天体逃逸，支持预警区域和可视化边界</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💫</div>
+        <h4>星际尘埃效果</h4>
+        <p>多层粒子系统模拟星际尘埃，增强空间沉浸感</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📸</div>
+        <h4>Bloom后处理</h4>
+        <p>Unreal Bloom泛光效果，让恒星散发真实的光晕</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h4>质心追踪</h4>
+        <p>实时显示系统质心位置，辅助理解动量守恒</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💥</div>
+        <h4>碰撞检测</h4>
+        <p>天体碰撞检测与引力软化，防止数值爆炸</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 价值与意义 -->
+  <div class="section">
+    <span class="section-tag tag-value">价值与意义</span>
+    <h2>三体3D能带来什么？</h2>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-number">10x</div>
+        <div class="value-label">教学效率提升<br>将抽象微分方程转化为可交互3D可视化</div>
+      </div>
+      <div class="value-card">
+        <div class="value-number">0</div>
+        <div class="value-label">使用门槛<br>浏览器打开即用，无需安装任何软件</div>
+      </div>
+      <div class="value-card">
+        <div class="value-number">∞</div>
+        <div class="value-label">实验可能性<br>参数自由调节，每次运行都是全新实验</div>
+      </div>
+    </div>
+    <h3>效率提升</h3>
+    <p>将抽象的微分方程数值解转化为可交互的3D可视化，让物理教学效率大幅提升。学生可在几分钟内完成传统课堂需要大量板书推导才能展示的轨道演化过程。</p>
+    <h3>社会价值</h3>
+    <p>降低科学探索的门槛，让零基础的人也能通过"玩"来理解混沌力学的基本概念，推动科学普及。借助《三体》IP的文化影响力，激发更多人对物理和天文的兴趣。</p>
+  </div>
+
+  <!-- 6. 技术方案 -->
+  <div class="section">
+    <span class="section-tag tag-solution">技术方案</span>
+    <h2>技术实现</h2>
+    <p>基于纯前端技术栈，零后端依赖，浏览器直接运行：</p>
+    <div class="tech-row">
+      <span class="tech-badge">Three.js 3D渲染</span>
+      <span class="tech-badge">OrbitControls 轨道控制</span>
+      <span class="tech-badge">EffectComposer 后处理</span>
+      <span class="tech-badge">UnrealBloomPass 泛光</span>
+      <span class="tech-badge">Yoshida 4阶辛积分器</span>
+      <span class="tech-badge">WebGL粒子系统</span>
+      <span class="tech-badge">Vite 构建</span>
+    </div>
+    <h3>数值算法</h3>
+    <p>采用Yoshida 4阶辛积分器（Symplectic Integrator），相比普通Runge-Kutta方法，辛积分器能更好地保持系统的哈密顿量守恒，长时间模拟不会出现能量漂移，确保轨道演化的物理正确性。</p>
+  </div>
+
+  <div class="footer">
+    <p>三体3D — 让混沌力学触手可及</p>
+    <p style="margin-top: 8px;">TRAE AI 创造力大赛 · 学习工作赛道</p>
+  </div>
+
+</div>
+
+<script>
+// 生成星空背景
+const starfield = document.getElementById('starfield');
+for (let i = 0; i < 120; i++) {
+  const star = document.createElement('span');
+  const size = Math.random() * 2 + 1;
+  star.style.cssText = `
+    left: ${Math.random() * 100}%;
+    top: ${Math.random() * 100}%;
+    width: ${size}px; height: ${size}px;
+    --dur: ${Math.random() * 3 + 2}s;
+    animation-delay: ${Math.random() * 3}s;
+    opacity: ${Math.random() * 0.5 + 0.2};
+  `;
+  starfield.appendChild(star);
+}
+</script>
+
+</body>
+</html>
