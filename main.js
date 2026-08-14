@@ -1124,6 +1124,15 @@ gl_FragColor = vec4(finalColor, finalAlpha);
     this.renderer.domElement.addEventListener("wheel", () =>
       this.handleWheel(),
     );
+    // 拖动（旋转视角）期间暂停 autoZoom，避免自动取景与手动旋转争抢相机位置
+    this.renderer.domElement.addEventListener("pointerdown", () =>
+      this.pauseAutoZoom(),
+    );
+    window.addEventListener("pointerup", () => {
+      if (this.autoZoom.enabled && this.autoZoomPaused) {
+        this.scheduleAutoZoomResume();
+      }
+    });
 
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
@@ -1150,11 +1159,18 @@ gl_FragColor = vec4(finalColor, finalAlpha);
   }
 
   handleWheel() {
+    this.pauseAutoZoom();
+    this.scheduleAutoZoomResume();
+  }
+
+  pauseAutoZoom() {
     if (this.autoZoom.enabled && !this.autoZoomPaused) {
       this.autoZoomPaused = true;
       this.updateAutoZoomUI();
     }
+  }
 
+  scheduleAutoZoomResume() {
     if (this.autoZoomResumeTimer) {
       clearTimeout(this.autoZoomResumeTimer);
       this.autoZoomResumeTimer = null;
@@ -1923,7 +1939,9 @@ gl_FragColor = vec4(finalColor, finalAlpha);
     }
 
     const targetDistance = Math.max(maxDist * this.autoZoom.padding, 200);
-    const currentDistance = this.camera.position.length();
+    // 统一基准：使用"相机到 target 的距离"，而非"相机到世界原点的距离"，
+    // 避免 target（质心）漂移时原点/质心两套基准混用导致视角被甩偏。
+    const currentDistance = this.camera.position.distanceTo(this.controls.target);
     const newDistance =
       currentDistance +
       (targetDistance - currentDistance) * this.autoZoom.sensitivity;
