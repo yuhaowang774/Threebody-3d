@@ -1933,7 +1933,20 @@ gl_FragColor = vec4(finalColor, finalAlpha);
       Math.min(this.autoZoom.maxDistance, newDistance),
     );
 
-    this.camera.position.normalize().multiplyScalar(clampedDistance);
+    // 关键修复：避免在极点附近（相机距离 target 趋近 0）时 normalize()
+    // 把相机位置塌缩到原点、丢失朝向导致视角"锁死"。
+    // 改用比例缩放而非 normalize → 保持原方向，只改距离。
+    const curLen = this.camera.position.distanceTo(this.controls.target);
+    const minLen = 1e-3;
+    if (curLen > minLen) {
+      this.camera.position.sub(this.controls.target)
+        .multiplyScalar(clampedDistance / curLen)
+        .add(this.controls.target);
+    } else if (curLen > 0) {
+      // 距离过小：沿相机当前视线方向（从 target 指向相机）安全外推，避免塌缩
+      const dir = this.camera.position.clone().sub(this.controls.target).normalize();
+      this.camera.position.copy(this.controls.target).addScaledVector(dir, clampedDistance);
+    }
     this.controls.target.set(com.x, com.y, com.z);
   }
 
