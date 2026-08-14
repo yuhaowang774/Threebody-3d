@@ -465,23 +465,26 @@ class NBodySim3D {
     const trackFill = document.getElementById("loaderTrackFill");
     const percent = document.getElementById("loaderPercent");
     const status = document.getElementById("loaderStatus");
-    if (!overlay) return;
 
-    const pad = (n) => String(n).padStart(2, "0");
-    const mgr = this.loadingManager;
-    mgr.onProgress = (url, loaded, total) => {
-      const p = total > 0 ? Math.round((loaded / total) * 100) : 0;
+    // 手动统计核心贴图（背景1 + 天体4 = 5 张），不依赖 LoadingManager 的自动计数，
+    // 避免单张挂起/干扰导致进度永久卡住。
+    this._texTotal = 5;
+    this._texLoaded = 0;
+    this._texDone = false;
+
+    this.updateLoader = () => {
+      const p = Math.min(100, Math.round((this._texLoaded / this._texTotal) * 100));
       if (trackFill) trackFill.style.width = p + "%";
-      if (percent) percent.textContent = pad(p) + "%";
+      if (percent) percent.textContent = String(p).padStart(2, "0") + "%";
     };
-    mgr.onLoad = () => {
-      if (trackFill) trackFill.style.width = "100%";
-      if (percent) percent.textContent = "100%";
-      if (status) status.textContent = "READY";
-      setTimeout(() => overlay.classList.add("hidden"), 400);
-    };
-    mgr.onError = (url) => {
-      console.warn("资源加载失败（已忽略，继续）:", url);
+    this.onTextureSettled = () => {
+      this._texLoaded++;
+      this.updateLoader();
+      if (this._texLoaded >= this._texTotal && !this._texDone) {
+        this._texDone = true;
+        if (status) status.textContent = "READY";
+        setTimeout(() => overlay && overlay.classList.add("hidden"), 400);
+      }
     };
   }
 
@@ -501,10 +504,12 @@ class NBodySim3D {
         });
         const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
         this.scene.add(bgMesh);
+        if (this.onTextureSettled) this.onTextureSettled();
       },
       undefined,
       (err) => {
         console.error("背景纹理加载失败: medres/eso0932a.JPG", err);
+        if (this.onTextureSettled) this.onTextureSettled();
       },
     );
 
@@ -610,10 +615,13 @@ class NBodySim3D {
     for (let i = 0; i < texturePaths.length; i++) {
       const texture = textureLoader.load(
         texturePaths[i],
-        undefined,
+        () => {
+          if (this.onTextureSettled) this.onTextureSettled();
+        },
         undefined,
         (err) => {
           console.error(`天体纹理加载失败: ${texturePaths[i]}`, err);
+          if (this.onTextureSettled) this.onTextureSettled();
         },
       );
       texture.wrapS = THREE.RepeatWrapping;
