@@ -554,7 +554,7 @@ input:checked + .slider:before {
   z-index: 9999;
   background: var(--ld-bg);
   opacity: 1;
-  transition: opacity 0.8s var(--ld-ease);
+  transition: opacity 1.5s var(--ld-ease);
   /* 内容左锚定、非对称、电影式留白 */
   display: flex;
   flex-direction: column;
