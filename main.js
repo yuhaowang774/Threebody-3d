@@ -462,20 +462,23 @@ class NBodySim3D {
 
   setupLoadingUI() {
     const overlay = document.getElementById("loading-overlay");
-    const barFill = document.getElementById("loaderBarFill");
+    const trackFill = document.getElementById("loaderTrackFill");
     const percent = document.getElementById("loaderPercent");
+    const status = document.getElementById("loaderStatus");
     if (!overlay) return;
 
+    const pad = (n) => String(n).padStart(2, "0");
     const mgr = this.loadingManager;
     mgr.onProgress = (url, loaded, total) => {
       const p = total > 0 ? Math.round((loaded / total) * 100) : 0;
-      if (barFill) barFill.style.width = p + "%";
-      if (percent) percent.textContent = p + "%";
+      if (trackFill) trackFill.style.width = p + "%";
+      if (percent) percent.textContent = pad(p) + "%";
     };
     mgr.onLoad = () => {
-      if (barFill) barFill.style.width = "100%";
+      if (trackFill) trackFill.style.width = "100%";
       if (percent) percent.textContent = "100%";
-      setTimeout(() => overlay.classList.add("hidden"), 350);
+      if (status) status.textContent = "READY";
+      setTimeout(() => overlay.classList.add("hidden"), 400);
     };
     mgr.onError = (url) => {
       console.warn("资源加载失败（已忽略，继续）:", url);
