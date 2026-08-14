@@ -471,6 +471,8 @@ class NBodySim3D {
     this._texTotal = 5;
     this._texLoaded = 0;
     this._texDone = false;
+    this._loadStart = Date.now();
+    this._minDuration = 2000; // 加载动画最短显示时长（ms）
 
     this.updateLoader = () => {
       const p = Math.min(100, Math.round((this._texLoaded / this._texTotal) * 100));
@@ -483,7 +485,10 @@ class NBodySim3D {
       if (this._texLoaded >= this._texTotal && !this._texDone) {
         this._texDone = true;
         if (status) status.textContent = "READY";
-        setTimeout(() => overlay && overlay.classList.add("hidden"), 400);
+        // 保证动画至少显示 _minDuration 秒：已用时间不足则延迟补足
+        const elapsed = Date.now() - this._loadStart;
+        const delay = Math.max(400, this._minDuration - elapsed);
+        setTimeout(() => overlay && overlay.classList.add("hidden"), delay);
       }
     };
   }
