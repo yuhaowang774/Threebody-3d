@@ -504,6 +504,22 @@
             <label>最近天体:</label>
             <span id="nearestBodyStatus">安全</span>
           </div>
+          <div class="input-group">
+            <label>系统动能:</label>
+            <span id="kineticEnergy">0.0000</span>
+          </div>
+          <div class="input-group">
+            <label>系统势能:</label>
+            <span id="potentialEnergy">0.0000</span>
+          </div>
+          <div class="input-group">
+            <label>总能量:</label>
+            <span id="totalEnergy">0.0000</span>
+          </div>
+          <div class="input-group">
+            <label>角动量:</label>
+            <span id="angularMomentum">0.0000</span>
+          </div>
           <button class="reset-panel-btn" id="resetGravityCage">
             重置参数
           </button>
@@ -692,8 +708,8 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+          "three": "./node_modules/three/build/three.module.js",
+          "three/addons/": "./node_modules/three/examples/jsm/"
         }
       }
     </script>
