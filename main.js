@@ -397,6 +397,9 @@ class NBodySim3D {
     this._tmpVec3c = new THREE.Vector3();
     this._tmpColor = new THREE.Color();
 
+    this.loadingManager = new THREE.LoadingManager();
+    this.setupLoadingUI();
+
     this.initThreeJS();
     this.initDomElements();
     this.initTrailColors();
@@ -457,10 +460,32 @@ class NBodySim3D {
     }
   }
 
+  setupLoadingUI() {
+    const overlay = document.getElementById("loading-overlay");
+    const barFill = document.getElementById("loaderBarFill");
+    const percent = document.getElementById("loaderPercent");
+    if (!overlay) return;
+
+    const mgr = this.loadingManager;
+    mgr.onProgress = (url, loaded, total) => {
+      const p = total > 0 ? Math.round((loaded / total) * 100) : 0;
+      if (barFill) barFill.style.width = p + "%";
+      if (percent) percent.textContent = p + "%";
+    };
+    mgr.onLoad = () => {
+      if (barFill) barFill.style.width = "100%";
+      if (percent) percent.textContent = "100%";
+      setTimeout(() => overlay.classList.add("hidden"), 350);
+    };
+    mgr.onError = (url) => {
+      console.warn("资源加载失败（已忽略，继续）:", url);
+    };
+  }
+
   initThreeJS() {
     this.scene = new THREE.Scene();
 
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new THREE.TextureLoader(this.loadingManager);
     textureLoader.load(
       "medres/eso0932a.JPG",
       (texture) => {
@@ -568,7 +593,7 @@ class NBodySim3D {
   }
 
   loadBodyTextures() {
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new THREE.TextureLoader(this.loadingManager);
     const texturePaths = [
       "medres/ostar-6.JPG",
       "medres/mstar-5.JPG",

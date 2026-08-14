@@ -537,3 +537,89 @@ input:checked + .slider:before {
     font-size: 18px;
   }
 }
+
+/* ===== 加载动画 ===== */
+#loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: radial-gradient(circle at 50% 45%, #0a0e1a 0%, #000 70%);
+  transition: opacity 0.8s ease;
+}
+#loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.loader-core {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loader-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(120, 170, 255, 0.15);
+  border-top-color: #6ea8ff;
+  border-right-color: #b98bff;
+  animation: loader-spin 1.1s linear infinite;
+}
+.loader-sun {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff6d5, #ffb347 55%, #ff7b00 100%);
+  box-shadow: 0 0 24px 6px rgba(255, 150, 40, 0.7);
+  animation: loader-pulse 1.6s ease-in-out infinite;
+}
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes loader-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 24px 6px rgba(255, 150, 40, 0.7);
+  }
+  50% {
+    transform: scale(1.12);
+    box-shadow: 0 0 34px 10px rgba(255, 170, 60, 0.85);
+  }
+}
+.loader-title {
+  color: #cfe0ff;
+  font-size: 20px;
+  letter-spacing: 6px;
+  font-family: Arial, sans-serif;
+  opacity: 0.9;
+}
+.loader-bar {
+  width: 220px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.loader-bar-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #6ea8ff, #b98bff);
+  transition: width 0.25s ease;
+}
+.loader-percent {
+  color: #8aa0c8;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  letter-spacing: 1px;
+}
