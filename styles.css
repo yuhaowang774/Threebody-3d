@@ -544,7 +544,6 @@ input:checked + .slider:before {
   --ld-fg: #f0f0fa;
   --ld-fg-dim: rgba(240, 240, 250, 0.55);
   --ld-line: rgba(240, 240, 250, 0.18);
-  --ld-ease: cubic-bezier(0.19, 1, 0.22, 1);
   --ld-mono: "Space Mono", "SFMono-Regular", "Roboto Mono", ui-monospace, "Courier New", monospace;
   --ld-sans: "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif;
 }
@@ -552,9 +551,9 @@ input:checked + .slider:before {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: var(--ld-bg);
+  background: #000000;
   opacity: 1;
-  transition: opacity 1.5s var(--ld-ease);
+  transition: opacity 1.5s cubic-bezier(0.19, 1, 0.22, 1);
   /* 内容左锚定、非对称、电影式留白 */
   display: flex;
   flex-direction: column;
@@ -579,41 +578,41 @@ input:checked + .slider:before {
 .loader-track-fill {
   height: 100%;
   width: 0%;
-  background: var(--ld-fg);
-  transition: width 0.4s var(--ld-ease);
+  background: #f0f0fa;
+  transition: width 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 /* 序号标识：如 [ SYS ] 风格的等宽标签 */
 .loader-eyebrow {
-  font-family: var(--ld-mono);
+  font-family: "Space Mono", "SFMono-Regular", "Roboto Mono", ui-monospace, "Courier New", monospace;
   font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--ld-fg-dim);
+  color: rgba(240, 240, 250, 0.55);
   margin-bottom: 16px;
 }
 .loader-title {
-  font-family: var(--ld-sans);
+  font-family: "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
   font-size: clamp(34px, 7vw, 72px);
   letter-spacing: -1px;
   line-height: 0.98;
   text-transform: uppercase;
-  color: var(--ld-fg);
+  color: #f0f0fa;
   margin: 0;
   /* 电影式揭示：上移淡入 */
   opacity: 0;
   transform: translateY(18px);
-  animation: ld-reveal 0.8s var(--ld-ease) 0.1s forwards;
+  animation: ld-reveal 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.1s forwards;
 }
 .loader-sub {
-  font-family: var(--ld-mono);
+  font-family: "Space Mono", "SFMono-Regular", "Roboto Mono", ui-monospace, "Courier New", monospace;
   font-size: 13px;
   letter-spacing: 1px;
-  color: var(--ld-fg-dim);
+  color: rgba(240, 240, 250, 0.55);
   margin-top: 16px;
   opacity: 0;
   transform: translateY(18px);
-  animation: ld-reveal 0.8s var(--ld-ease) 0.25s forwards;
+  animation: ld-reveal 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.25s forwards;
 }
 /* 底部状态行：百分比 + 像素分隔符 */
 .loader-meta {
@@ -624,15 +623,15 @@ input:checked + .slider:before {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-family: var(--ld-mono);
+  font-family: "Space Mono", "SFMono-Regular", "Roboto Mono", ui-monospace, "Courier New", monospace;
   font-size: 13px;
   letter-spacing: 2px;
-  color: var(--ld-fg-dim);
-  border-top: 1px solid var(--ld-line);
+  color: rgba(240, 240, 250, 0.55);
+  border-top: 1px solid rgba(240, 240, 250, 0.18);
   padding-top: 16px;
 }
 .loader-percent {
-  color: var(--ld-fg);
+  color: #f0f0fa;
   font-size: 15px;
   letter-spacing: 1px;
 }
