@@ -498,7 +498,7 @@ class NBodySim3D {
 
     const textureLoader = new THREE.TextureLoader(this.loadingManager);
     textureLoader.load(
-      "medres/eso0932a.JPG",
+      "medres/eso0932a.webp",
       (texture) => {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         const bgGeometry = new THREE.SphereGeometry(50000, 64, 64);
@@ -513,7 +513,7 @@ class NBodySim3D {
       },
       undefined,
       (err) => {
-        console.error("背景纹理加载失败: medres/eso0932a.JPG", err);
+        console.error("背景纹理加载失败: medres/eso0932a.webp", err);
         if (this.onTextureSettled) this.onTextureSettled();
       },
     );
@@ -608,10 +608,10 @@ class NBodySim3D {
   loadBodyTextures() {
     const textureLoader = new THREE.TextureLoader(this.loadingManager);
     const texturePaths = [
-      "medres/ostar-6.JPG",
-      "medres/mstar-5.JPG",
-      "medres/kstar-4.JPG",
-      "medres/mars.jpg",
+      "medres/ostar-6.webp",
+      "medres/mstar-5.webp",
+      "medres/kstar-4.webp",
+      "medres/mars.webp",
     ];
 
     this.bodyTextures = [];
