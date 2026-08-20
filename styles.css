@@ -35,9 +35,8 @@ body {
 .panel-container {
   position: fixed;
   top: 20px;
-  right: 20px;
+  left: 20px;
   z-index: 100;
-  cursor: move;
   user-select: none;
 }
 /* 切换按钮：锐利矩形，单色描边，无投影/无圆角 */
@@ -57,16 +56,18 @@ body {
   transition: background var(--hover) var(--ease),
     color var(--hover) var(--ease);
   position: relative;
-  z-index: 10;
+  z-index: 110;
 }
 .toggle-btn:hover {
   background: var(--ink);
   color: var(--bg);
 }
+/* 展开态：按钮固定在容器左上角，始终可见、可点击收起；
+   填充醒目配色，与下方面板区分 */
 .toggle-btn.expanded {
-  position: absolute;
-  right: 0;
-  top: 0;
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
 }
 /* 控制面板：透明黑、1px 边线、无圆角/无投影、左锚定 */
 .control-panel {
@@ -80,10 +81,10 @@ body {
   border-radius: 0;
   opacity: 0;
   transform: translateY(-8px);
-  transform-origin: top right;
+  transform-origin: top left;
   position: absolute;
-  right: 0;
-  top: 0;
+  left: 0;
+  top: 56px;
   pointer-events: none;
   transition: opacity var(--t-medium) var(--ease),
     transform var(--t-medium) var(--ease);
@@ -92,6 +93,18 @@ body {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+/* 桌面端：打开设置时，3D 画面整体右移，左侧留出空间放置设置栏，
+   右侧区域可实时观察调整结果 */
+@media (min-width: 769px) {
+  body.panel-open #canvas-container {
+    transform: translateX(280px);
+    transition: transform var(--t-medium) var(--ease);
+  }
+  #canvas-container {
+    transition: transform var(--t-medium) var(--ease);
+  }
 }
 .control-panel::-webkit-scrollbar {
   width: 4px;
@@ -523,29 +536,110 @@ input:checked + .slider:before {
   letter-spacing: 0.5px;
 }
 
+/* ===== 移动端适配 ===== */
 @media (max-width: 768px) {
-  .control-panel {
-    width: calc(100vw - 40px);
-    max-width: 520px;
-    max-height: 80vh;
+  body.panel-open #canvas-container {
+    transform: none;
   }
   .panel-container {
-    top: 10px;
-    right: 10px;
+    top: 12px;
+    left: 12px;
+  }
+  .control-panel {
+    /* 改为底部抽屉，避免遮挡顶部按钮 */
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100vw;
+    max-width: none;
+    max-height: 82vh;
+    padding: 16px 16px 24px;
+    border-top: 1px solid var(--line);
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+    transform: translateY(100%);
+    transform-origin: bottom center;
+    border-radius: 0;
+  }
+  .control-panel.show {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  /* 控件在小屏上堆叠并占满宽度，方便触摸 */
+  .input-group {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+  .input-group label {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .input-group input[type="number"] {
+    width: 72px;
+    flex: 0 0 auto;
+  }
+  .input-group input[type="range"] {
+    flex: 1 1 120px;
+    width: auto;
+    min-width: 120px;
+  }
+  .input-group span {
+    min-width: 44px;
+  }
+  .btn-group {
+    flex-wrap: wrap;
+  }
+  .btn-group button {
+    flex: 1 1 30%;
+    min-width: 0;
+    padding: 14px 8px;
+  }
+  .feature-btn {
+    min-width: 70px;
+    padding: 14px 10px;
+  }
+  /* 天体质量表格在小屏改为可横向滚动，避免挤压 */
+  .bodies-row .body-col input[type="number"] {
+    padding: 10px 6px;
+    font-size: 14px;
   }
 }
 
 @media (max-width: 480px) {
-  .control-panel {
-    width: calc(100vw - 20px);
-    max-height: 75vh;
-    padding: 15px;
-    padding-top: 60px;
+  .panel-container {
+    top: 8px;
+    left: 8px;
   }
   .toggle-btn {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     font-size: 18px;
+  }
+  .control-panel {
+    max-height: 88vh;
+    padding: 14px 14px 28px;
+    padding-top: 52px;
+  }
+  .bodies-row .label-col,
+  .bodies-header .label-col {
+    width: 42px;
+  }
+  .bodies-row .label-col {
+    font-size: 10px;
+  }
+  .feature-btn {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+  .switch {
+    width: 48px;
+    height: 26px;
+    flex: 0 0 auto;
   }
 }
 

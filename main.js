@@ -2120,12 +2120,8 @@ gl_FragColor = vec4(finalColor, finalAlpha);
 
   updateCameraInfo() {
     const distance = this.camera.position.length();
-    const angle =
-      (Math.atan2(this.camera.position.y, this.camera.position.x) * 180) /
-      Math.PI;
 
     document.getElementById("cameraDistance").textContent = distance.toFixed(0);
-    document.getElementById("cameraAngle").textContent = angle.toFixed(0) + "°";
 
     const rotateAngleEl = document.getElementById("currentRotateAngle");
     if (rotateAngleEl) {
@@ -2333,53 +2329,32 @@ const controlPanel = document.getElementById("controlPanel");
 const panelContainer = document.getElementById("panelContainer");
 let panelExpanded = false;
 
-let isDragging = false;
-let hasMoved = false;
-let dragStartX, dragStartY, containerStartX, containerStartY;
-
-panelContainer.addEventListener("mousedown", (e) => {
-  if (e.target.tagName === "INPUT") return;
-  isDragging = true;
-  hasMoved = false;
-  dragStartX = e.clientX;
-  dragStartY = e.clientY;
-  const rect = panelContainer.getBoundingClientRect();
-  containerStartX = rect.left;
-  containerStartY = rect.top;
-  panelContainer.style.cursor = "grabbing";
-});
-
-document.addEventListener("mousemove", (e) => {
-  if (!isDragging) return;
-  const deltaX = e.clientX - dragStartX;
-  const deltaY = e.clientY - dragStartY;
-  if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-    hasMoved = true;
-  }
-  const newX = containerStartX + deltaX;
-  const newY = containerStartY + deltaY;
-  panelContainer.style.left = newX + "px";
-  panelContainer.style.top = newY + "px";
-  panelContainer.style.right = "auto";
-  panelContainer.style.transform = "none";
-});
-
-document.addEventListener("mouseup", () => {
-  if (isDragging) {
-    isDragging = false;
-    panelContainer.style.cursor = "move";
-  }
-});
+// 隔离控制面板的交互：阻止面板内的指针/鼠标事件冒泡到 window 级处理器
+// （handleClick / handleMouseMove / handleDoubleClick 等），确保面板上的
+// 操作（拖动滑块、点击按钮、触摸）不会误触背景星球的聚焦、相机跟随等行为。
+[
+  "pointerdown",
+  "pointermove",
+  "pointerup",
+  "mousedown",
+  "mousemove",
+  "mouseup",
+  "click",
+  "dblclick",
+  "wheel",
+  "touchstart",
+  "touchmove",
+  "touchend",
+].forEach((type) =>
+  panelContainer.addEventListener(type, (e) => e.stopPropagation())
+);
 
 toggleBtn.addEventListener("click", (e) => {
-  if (hasMoved) {
-    hasMoved = false;
-    return;
-  }
   e.stopPropagation();
   panelExpanded = !panelExpanded;
   controlPanel.classList.toggle("show", panelExpanded);
   toggleBtn.classList.toggle("expanded", panelExpanded);
+  document.body.classList.toggle("panel-open", panelExpanded);
   toggleBtn.textContent = panelExpanded ? "✕" : "⚙";
 });
 
@@ -2388,31 +2363,16 @@ function hideControlPanel() {
     panelExpanded = false;
     controlPanel.classList.remove("show");
     toggleBtn.classList.remove("expanded");
+    document.body.classList.remove("panel-open");
     toggleBtn.textContent = "⚙";
   }
 }
-
-document.addEventListener("click", (e) => {
-  if (panelExpanded && !panelContainer.contains(e.target)) {
-    hideControlPanel();
-  }
-});
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && panelExpanded) {
     hideControlPanel();
   }
 });
-
-document.addEventListener(
-  "touchstart",
-  (e) => {
-    if (panelExpanded && !panelContainer.contains(e.target)) {
-      hideControlPanel();
-    }
-  },
-  { passive: true },
-);
 
 document.getElementById("start").onclick = () => sim.start();
 document.getElementById("stop").onclick = () => sim.stop();
